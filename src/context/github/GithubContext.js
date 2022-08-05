@@ -8,13 +8,13 @@ const GITHUB_TOKEN = process.env.REACT_APP_GITHUB_TOKEN;
 
 /* 
   provider takes in props –
-  take the children which is
-  whatever we suround with the provider
+  children, whatever we surround with the provider
 */
 export const GithubProvider = ({ children }) => {
   const initialState = {
     users: [],
     user: {},
+    repos: [],
     loading: false,
   };
 
@@ -68,6 +68,28 @@ export const GithubProvider = ({ children }) => {
     }
   };
 
+  const getUserRepos = async (login) => {
+    setLoading();
+
+    const params = new URLSearchParams({
+      sort: 'created',
+      per_page: 10
+    });
+
+    const res = await fetch(`${GITHUB_URL}/users/${login}/repos?${params}`, {
+      // headers: {
+      //   Authorization: `token ${GITHUB_TOKEN}`
+      // }
+    });
+
+    const data = await res.json();
+
+    dispatch({
+      type: 'GET_REPOS',
+      payload: data,
+    });
+  };
+
   const setLoading = () => dispatch({ type: 'SET_LOADING' });
 
   const clearSearch = () => dispatch({ type: 'CLEAR_SEARCH' });
@@ -78,9 +100,11 @@ export const GithubProvider = ({ children }) => {
         users: state.users,
         loading: state.loading,
         user: state.user,
+        repos: state.repos,
         searchUsers,
         getUser,
         clearSearch,
+        getUserRepos
       }}
     >
       {children}
