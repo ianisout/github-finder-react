@@ -4,18 +4,23 @@ import { useParams, Link } from 'react-router-dom'
 import Spinner from '../components/layout/Spinner'
 import RepoList from '../components/repos/RepoList'
 import GithubContext from '../context/github/GithubContext'
+import { getUserAndRepos } from '../context/github/GithubActions'
 
 function User() {
-  //getuser = function, user = state
-  const { getUser, user, loading, getUserRepos, repos } = useContext(GithubContext)
+  const { user, loading, repos, dispatch } = useContext(GithubContext)
 
   const params = useParams()
 
   useEffect(() => {
-    getUser(params.login)
-    getUserRepos(params.login)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    dispatch({ type: 'SET_LOADING '})
+    const getUserData = async () => {
+      const userData = await getUserAndRepos(params.login)
+
+      dispatch({ type: 'GET_USER_AND_REPOS', payload: userData})
+    }
+
+    getUserData()
+  }, [dispatch, params.login])
 
   const {
     name,
@@ -111,7 +116,7 @@ function User() {
         </div>
       </div>
             
-      <div className="w-full py-5 mb-6 rounded-lg shadow-md bg-base-100 stats">
+      <div className="w-full col-span-3 py-5 mb-6 rounded-lg shadow-md bg-base-100 stats">
         <div className="stat">
           <div className="stat-figure text-secondary">
             <FaUsers className='text-3xl md:text-5xl' />
@@ -157,10 +162,7 @@ function User() {
           </div>
         </div>
       </div>
-      <div>
-
       <RepoList repos={repos}/>
-      </div>
     </div>
   </>
 }
